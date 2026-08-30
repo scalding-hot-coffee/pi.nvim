@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-08-30
+- **ADDED:** `:PiModelTags` browses models by tag and `:PiTagModel` tags the current model. Tags are metadata only and never change the scoped set, so `:PiCycleModel` is unaffected. Configurable via `model_tags.path`.
 
 - **ADDED:** `:PiCmdScopedModels` selects which models `:PiCycleModel` cycles through, mirroring the TUI's `/scoped-models`. The set is pi's global `enabledModels`, so it is shared with the TUI.
 - **ADDED:** `:PiCycleModelBack` cycles to the previous model.

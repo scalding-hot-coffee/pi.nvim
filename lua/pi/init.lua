@@ -247,6 +247,40 @@ function M.cycle_model(direction)
     require("pi.models").cycle(session, direction)
 end
 
+--- Browse models by tag: pick a tag, then a model, which becomes the active
+--- model. Tags are metadata only -- this never changes the scoped set, so
+--- :PiCycleModel keeps cycling exactly what it cycled before.
+function M.model_tags()
+    local session = require("pi.sessions.manager").get()
+    if not session or not session.rpc:is_running() then
+        require("pi.notify").warn("No active session")
+        return
+    end
+    require("pi.models").with_available(session, function(all_models)
+        require("pi.ui.model_tags").open(session, all_models)
+    end)
+end
+
+--- Edit the tags on the session's current model.
+function M.tag_current_model()
+    local session = require("pi.sessions.manager").get()
+    if not session or not session.rpc:is_running() then
+        require("pi.notify").warn("No active session")
+        return
+    end
+    session.rpc:send({ type = "get_state" }, function(res)
+        vim.schedule(function()
+            local model = res.success and res.data and res.data.model
+            if not model then
+                require("pi.notify").warn("No current model")
+                return
+            end
+            local key = model.provider .. "/" .. model.id
+            require("pi.ui.model_tags").edit(key, model.id)
+        end)
+    end)
+end
+
 --- Open the scoped model selector: the set :PiCycleModel cycles through.
 --- Edits pi's global `enabledModels`, shared with the TUI's /scoped-models.
 function M.scoped_models()
