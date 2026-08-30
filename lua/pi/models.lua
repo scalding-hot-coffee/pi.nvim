@@ -124,12 +124,18 @@ function M.with_available(session, fn)
 end
 
 --- Cycle to the next model.
---- If `models` is configured, cycles within the resolved subset.
+---
+--- Priority: the plugin's `models` config, then the global scoped set in pi's
+--- settings.json -- the same `enabledModels` list the TUI's /scoped-models
+--- edits -- then the backend's built-in cycle over everything available.
 ---@param session pi.Session
-function M.cycle(session)
+---@param direction? "forward"|"backward" defaults to forward
+function M.cycle(session, direction)
     local entries = Config.options.models
-    if not entries or #entries == 0 then
-        -- No config — use backend's built-in cycle
+    local scoped = require("pi.scoped_models").read()
+
+    if (not entries or #entries == 0) and not scoped then
+        -- Nothing narrows the list — use the backend's built-in cycle
         session.rpc:send({ type = "cycle_model" }, function(res)
             vim.schedule(function()
                 if res.success and res.data then
@@ -143,30 +149,43 @@ function M.cycle(session)
         end)
         return
     end
-    -- Configured models — resolve and cycle manually
+
+    local step = direction == "backward" and -1 or 1
     M.with_available(session, function(all_models)
-        local resolved = M.resolve_entries(entries, all_models)
-        if #resolved == 0 then
-            Notify.warn("No configured models matched available models")
-            return
+        local list
+        if entries and #entries > 0 then
+            list = M.resolve_entries(entries, all_models)
+            if #list == 0 then
+                Notify.warn("No configured models matched available models")
+                return
+            end
+        else
+            list = require("pi.scoped_models").resolve(all_models)
+            if #list == 0 then
+                Notify.warn("No scoped models matched available models")
+                return
+            end
         end
-        if #resolved == 1 then
+        if #list == 1 then
             Notify.info("Only one model in list")
             return
         end
-        -- Find current model and advance to next
+
+        -- Find current model and step to the neighbour
         session.rpc:send({ type = "get_state" }, function(state_res)
             vim.schedule(function()
                 local current = state_res.success and state_res.data and state_res.data.model
                 local current_key = current and (current.provider .. "/" .. current.id) or ""
-                local next_idx = 1
-                for i, m in ipairs(resolved) do
+                local index = 0
+                for i, m in ipairs(list) do
                     if m.provider .. "/" .. m.id == current_key then
-                        next_idx = (i % #resolved) + 1
+                        index = i
                         break
                     end
                 end
-                M.set(session, resolved[next_idx])
+                -- A model outside the list starts the cycle at its head.
+                local next_idx = index == 0 and 1 or ((index - 1 + step) % #list) + 1
+                M.set(session, list[next_idx])
             end)
         end)
     end)
@@ -179,7 +198,8 @@ function M.select(session)
     local Dialog = require("pi.ui.dialog")
     M.with_available(session, function(all_models)
         local entries = Config.options.models
-        local models = (entries and #entries > 0) and M.resolve_entries(entries, all_models) or all_models
+        local models = (entries and #entries > 0) and M.resolve_entries(entries, all_models)
+            or require("pi.scoped_models").resolve(all_models)
         if #models == 0 then
             Notify.warn("No configured models matched available models")
             return

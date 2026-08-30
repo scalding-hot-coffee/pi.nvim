@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-30
+
+- **ADDED:** `:PiCmdScopedModels` selects which models `:PiCycleModel` cycles through, mirroring the TUI's `/scoped-models`. The set is pi's global `enabledModels`, so it is shared with the TUI.
+- **ADDED:** `:PiCycleModelBack` cycles to the previous model.
+- **CHANGED:** `:PiCycleModel` and `:PiSelectModel` honour the global scoped model set when no `models` config is set. Edits apply to a running session without a restart.
+
 ## 2026-07-08
 
 - **FIXED:** Show the assistant header before tool-only turns so tool calls do not appear under the user message.

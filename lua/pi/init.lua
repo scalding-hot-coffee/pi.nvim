@@ -237,13 +237,27 @@ end
 
 --- Cycle to the next model.
 --- If `models` is configured, cycles within the resolved subset.
-function M.cycle_model()
+---@param direction? "forward"|"backward" defaults to forward
+function M.cycle_model(direction)
     local session = require("pi.sessions.manager").get()
     if not session or not session.rpc:is_running() then
         require("pi.notify").warn("No active session")
         return
     end
-    require("pi.models").cycle(session)
+    require("pi.models").cycle(session, direction)
+end
+
+--- Open the scoped model selector: the set :PiCycleModel cycles through.
+--- Edits pi's global `enabledModels`, shared with the TUI's /scoped-models.
+function M.scoped_models()
+    local session = require("pi.sessions.manager").get()
+    if not session or not session.rpc:is_running() then
+        require("pi.notify").warn("No active session")
+        return
+    end
+    require("pi.models").with_available(session, function(all_models)
+        require("pi.ui.scoped_models").open(all_models)
+    end)
 end
 
 --- Select a model from configured models (or all if none configured).
