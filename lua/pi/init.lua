@@ -247,6 +247,19 @@ function M.cycle_model(direction)
     require("pi.models").cycle(session, direction)
 end
 
+--- Open the model category picker. Activating a category makes its members
+--- the scoped model set, so :PiCycleModel cycles within that group.
+function M.model_categories()
+    local session = require("pi.sessions.manager").get()
+    if not session or not session.rpc:is_running() then
+        require("pi.notify").warn("No active session")
+        return
+    end
+    require("pi.models").with_available(session, function(all_models)
+        require("pi.ui.model_categories").open(all_models)
+    end)
+end
+
 --- Open the scoped model selector: the set :PiCycleModel cycles through.
 --- Edits pi's global `enabledModels`, shared with the TUI's /scoped-models.
 function M.scoped_models()

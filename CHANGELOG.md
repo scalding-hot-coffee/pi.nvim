@@ -1,7 +1,7 @@
 # Changelog
 
 ## 2026-08-30
-
+- **ADDED:** `:PiModelCategories` groups models into named categories; activating one scopes `:PiCycleModel` to that group. Assign with `c` in `:PiCmdScopedModels`. Membership is many-to-many, stored outside pi's settings and configurable via `model_categories.path`.
 - **ADDED:** `:PiCmdScopedModels` selects which models `:PiCycleModel` cycles through, mirroring the TUI's `/scoped-models`. The set is pi's global `enabledModels`, so it is shared with the TUI.
 - **ADDED:** `:PiCycleModelBack` cycles to the previous model.
 - **CHANGED:** `:PiCycleModel` and `:PiSelectModel` honour the global scoped model set when no `models` config is set. Edits apply to a running session without a restart.

@@ -38,6 +38,11 @@
 ---@field toggle? pi.KeySpecs Key(s) to enter/exit zen mode
 ---@field exit? pi.KeySpecs Additional key(s) that only exit zen mode
 
+---@class pi.ModelCategoriesConfig
+---@field path? string Where named model categories are stored. Defaults to
+---       `stdpath("data")/pi/model-categories.json`. Point it at your dotfiles
+---       to version-control the categories.
+
 ---@class pi.ZenConfig
 ---@field width? integer Prompt width in columns (default: textwidth if set, otherwise 80)
 ---@field keys pi.ZenKeys
@@ -324,6 +329,9 @@ local defaults = {
             toggle = nil,
             exit = nil,
         },
+    },
+    model_categories = {
+        path = nil,
     },
     verbs = {
         use_defaults = true,

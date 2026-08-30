@@ -134,6 +134,10 @@ function M.setup()
     vim.api.nvim_create_user_command("PiCmdScopedModels", function()
         Pi.scoped_models()
     end, { desc = "π: /scoped-models — edit the set PiCycleModel cycles" })
+
+    vim.api.nvim_create_user_command("PiModelCategories", function()
+        Pi.model_categories()
+    end, { desc = "π: pick a model category to scope cycling to" })
 end
 
 return M

@@ -34,6 +34,38 @@ other way.
 Selecting every available model removes the key rather than writing a full
 list, matching what the TUI persists.
 
+### `:PiModelCategories`
+
+Named groups of models, layered over the scoped set. Activating a category
+makes its members the scoped model set, so `:PiCycleModel` cycles within that
+group -- categories organise the cycle, they do not replace it.
+
+| key | action |
+| --- | --- |
+| `<CR>` | activate: scope cycling to this category |
+| `n` | new category |
+| `r` | rename |
+| `d` | delete (never touches the models themselves) |
+| `q` / `<Esc>` | close |
+
+Assign models with `c` in `:PiCmdScopedModels`, which also shows each model's
+categories. Membership is many-to-many: a model can sit in as many categories
+as you like, and removing one leaves the others alone.
+
+Categories live in `stdpath("data")/pi/model-categories.json`. Point
+`model_categories.path` somewhere else -- your dotfiles, say -- to
+version-control them. This is Neovim-only state, kept out of pi's
+`settings.json`, which is schema-validated on load.
+
+```lua
+require("pi").setup({
+    model_categories = { path = "~/dotfiles/nvim/pi-model-categories.json" },
+})
+```
+
+A category listing "2 of 3 available" has an entry that no longer matches a
+live model; activating it scopes to the ones that do resolve and says so.
+
 Use the [pi coding agent](https://pi.dev) without leaving Neovim.
 
 <p align="center">
