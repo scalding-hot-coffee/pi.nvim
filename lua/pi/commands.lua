@@ -89,8 +89,12 @@ function M.setup()
     end, { desc = "Select π thinking level" })
 
     vim.api.nvim_create_user_command("PiCycleModel", function()
-        Pi.cycle_model()
+        Pi.cycle_model("forward")
     end, { desc = "Cycle π model" })
+
+    vim.api.nvim_create_user_command("PiCycleModelBack", function()
+        Pi.cycle_model("backward")
+    end, { desc = "Cycle π model backwards" })
 
     vim.api.nvim_create_user_command("PiSelectModel", function()
         Pi.select_model()
@@ -125,6 +129,11 @@ function M.setup()
     vim.api.nvim_create_user_command("PiToggleDebug", function()
         Pi.toggle_debug()
     end, { desc = "Toggle π RPC debug logging" })
+
+    -- PiCmd*: Neovim equivalents of the TUI's slash commands.
+    vim.api.nvim_create_user_command("PiCmdScopedModels", function()
+        Pi.scoped_models()
+    end, { desc = "π: /scoped-models — edit the set PiCycleModel cycles" })
 end
 
 return M

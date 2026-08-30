@@ -1,5 +1,39 @@
 # pi.nvim
 
+## Fork additions: scoped models
+
+`PiCmd*` commands are Neovim equivalents of pi's TUI slash commands. Each one
+maps to a real RPC method or a local action — pi's RPC mode does not interpret
+slash commands, so sending `/foo` over the wire would just prompt the model.
+
+### `:PiCmdScopedModels`
+
+The counterpart to the TUI's `/scoped-models`: choose which models
+`:PiCycleModel` cycles through, the same way `ctrl+p` cycles in the TUI.
+
+The set lives in pi's global `settings.json` under `enabledModels`, as an
+ordered array of `provider/id` strings — the same key the TUI writes on
+`ctrl+s`. Edit it in either place and both see it. Order is the cycle order,
+and an absent key means every model is enabled.
+
+| key | action |
+| --- | --- |
+| `<CR>` / `<Space>` | toggle the model under the cursor |
+| `p` | toggle every model from that provider |
+| `a` | enable all, or all matching the filter |
+| `x` | clear all, or all matching the filter |
+| `J` / `K` (`<M-Down>` / `<M-Up>`) | reorder — this is the cycle order |
+| `/` | fuzzy filter |
+| `q` / `<Esc>` | close (`<Esc>` clears an active filter first) |
+
+Changes are written immediately; there is no session-only tier, because the
+set is global. `:PiCycleModel` re-reads it on every invocation, so a running
+session picks up an edit without restarting. `:PiCycleModelBack` cycles the
+other way.
+
+Selecting every available model removes the key rather than writing a full
+list, matching what the TUI persists.
+
 Use the [pi coding agent](https://pi.dev) without leaving Neovim.
 
 <p align="center">
