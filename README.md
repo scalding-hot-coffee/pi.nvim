@@ -34,6 +34,45 @@ other way.
 Selecting every available model removes the key rather than writing a full
 list, matching what the TUI persists.
 
+### `:PiModelTags`
+
+Tags are names attached to models, for finding them. **They never touch the
+scoped set**, so `:PiCycleModel` cycles exactly what it cycled before, whether
+you have no tags or fifty. Tagging organises how you *find* a model; the
+scoped set decides what you *cycle*.
+
+`:PiModelTags` browses in two levels — pick a tag, see its models, pick one to
+make it the active model. That is the same end result as `:PiCycleModel`,
+reached by navigating rather than stepping.
+
+| level | key | action |
+| --- | --- | --- |
+| tags | `<CR>` | open the tag's models |
+| tags | `n` / `r` / `d` | new / rename / delete |
+| models | `<CR>` | make it the active model |
+| models | `x` | remove this model from the tag |
+| models | `<BS>` | back to the tag list |
+
+Deleting a tag removes it from every model that carried it — that is all a tag
+is — and changes nothing else about those models. Membership is many-to-many.
+
+`:PiTagModel` edits the tags on the current model. `t` in
+`:PiCmdScopedModels` does the same for the model under the cursor, and that
+selector shows each model's tags inline.
+
+Tags live in `stdpath("data")/pi/model-tags.json`. Set `model_tags.path` to
+keep them elsewhere — in a dotfiles repo, say. They are kept out of pi's
+`settings.json`, which is schema-validated on load.
+
+```lua
+require("pi").setup({
+    model_tags = { path = "~/dotfiles/nvim/pi-model-tags.json" },
+})
+```
+
+A tag reading "2 of 3 available" holds an entry that no longer matches a live
+model; it stays listed rather than disappearing silently.
+
 Use the [pi coding agent](https://pi.dev) without leaving Neovim.
 
 <p align="center">

@@ -134,6 +134,14 @@ function M.setup()
     vim.api.nvim_create_user_command("PiCmdScopedModels", function()
         Pi.scoped_models()
     end, { desc = "π: /scoped-models — edit the set PiCycleModel cycles" })
+
+    vim.api.nvim_create_user_command("PiModelTags", function()
+        Pi.model_tags()
+    end, { desc = "π: browse models by tag" })
+
+    vim.api.nvim_create_user_command("PiTagModel", function()
+        Pi.tag_current_model()
+    end, { desc = "π: edit tags on the current model" })
 end
 
 return M

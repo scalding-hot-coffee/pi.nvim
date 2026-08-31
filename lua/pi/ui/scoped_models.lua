@@ -14,9 +14,10 @@ local M = {}
 local Ft = require("pi.filetypes")
 local Notify = require("pi.notify")
 local Scoped = require("pi.scoped_models")
+local Tags = require("pi.model_tags")
 local WINHIGHLIGHT = require("pi.ui.highlights").DIALOG_WINHIGHLIGHT
 
-local FOOTER = " <CR> toggle · p provider · a all · x clear · J/K reorder · / filter · q close "
+local FOOTER = " <CR> toggle · p provider · a all · x clear · J/K reorder · t tag · / filter · q close "
 
 --- Open the selector for the models the backend currently offers.
 ---@param all table[] available models from get_available_models
@@ -114,6 +115,10 @@ function M.open(all)
     vim.wo[win].cursorline = true
     vim.wo[win].wrap = false
 
+    --- key -> "cheap, fast", rebuilt once per redraw rather than per row.
+    ---@type table<string, string>
+    local tag_labels = {}
+
     ---@param key string
     ---@param unscoped boolean
     ---@return string
@@ -121,11 +126,12 @@ function M.open(all)
         -- No marks while unscoped: nothing is excluded, so a column of ticks
         -- would only suggest a selection the user has not made yet.
         local mark = unscoped and "  " or (selected[key] and "✓ " or "✗ ")
+        local suffix = tag_labels[key] and ("  · " .. tag_labels[key]) or ""
         local model = models[key]
         if not model then
-            return mark .. key .. "  [unavailable]"
+            return mark .. key .. "  [unavailable]" .. suffix
         end
-        return mark .. model.id .. "  [" .. model.provider .. "]"
+        return mark .. model.id .. "  [" .. model.provider .. "]" .. suffix
     end
 
     ---@return string? key
@@ -141,6 +147,7 @@ function M.open(all)
     ---@param keep_key string?
     local function redraw(keep_key)
         local view = vim.api.nvim_win_is_valid(win) and vim.fn.winsaveview() or nil
+        tag_labels = Tags.labels()
 
         visible = order
         if query ~= "" then
@@ -345,6 +352,15 @@ function M.open(all)
     end)
     map("<M-Down>", function()
         reorder(1)
+    end)
+
+    map("t", function()
+        local key = current()
+        if key then
+            require("pi.ui.model_tags").edit(key, models[key] and models[key].id or key, function()
+                redraw(key)
+            end)
+        end
     end)
 
     map("/", function()
