@@ -267,7 +267,7 @@ local warned = {}
 
 ---@param tab pi.TabId
 ---@return pi.Rpc
-function Rpc.new(tab)
+function Rpc.new(tab, extra_args)
     local self = setmetatable({}, Rpc)
     self._job_id = nil
     self._handler = nil
@@ -275,6 +275,7 @@ function Rpc.new(tab)
     self._tab = tab
     self._req_id = 1
     self._stdout_buf = ""
+    self.extra_args = extra_args or {}
     return self
 end
 
@@ -307,7 +308,7 @@ function Rpc:start()
         return true
     end
     self._stdout_buf = ""
-    local cmd = Cli.command()
+    local cmd = Cli.command(self.extra_args)
     self._job_id = vim.fn.jobstart(cmd, {
         on_stdout = function(_, data)
             self:_on_stdout(data)

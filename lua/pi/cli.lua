@@ -89,9 +89,10 @@ function M.args()
 end
 
 ---@return string[]
-function M.command()
+function M.command(extra_args)
     local cmd = { M.bin() }
-    vim.list_extend(cmd, M.args())
+    local all_args = vim.list_extend(M.args(), extra_args or {})
+    vim.list_extend(cmd, M.filter_args(all_args))
     cmd[#cmd + 1] = "--mode"
     cmd[#cmd + 1] = "rpc"
     return cmd

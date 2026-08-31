@@ -226,6 +226,8 @@ function M.open(session, all)
             return
         end
         close()
+        -- Discard any pending input to prevent keypress leakage
+        vim.fn.feedkeys(vim.api.nvim_replace_termcodes("<Ignore>", true, false, true), "n")
         open_models(name, session, all, function()
             M.open(session, all)
         end)

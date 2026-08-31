@@ -189,8 +189,19 @@
 ---@field map_command? fun(cmd: table, ctx: pi.RpcAdapterContext): table? Map or drop outbound RPC commands.
 ---@field map_event? fun(msg: table, ctx: pi.RpcAdapterContext): table? Map or drop inbound RPC events.
 
+---@class pi.Profile
+---@field desc string
+---@field model string?
+---@field exclude_tools string[]?
+---@field append_prompt string?
+---@field thinking string?
+---@field cwd string?
+
+---@class pi.ProfilesConfig
+
 ---@class pi.Options
 ---@field cli pi.CliConfig
+---@field profiles? pi.ProfilesConfig
 ---@field rpc pi.RpcConfig
 ---@field agent_dir? string Override the π agent directory (default: $PI_CODING_AGENT_DIR or ~/.pi/agent)
 ---@field debug boolean Enable RPC debug logging to stdpath("log")/pi/<session>/rpc.log
