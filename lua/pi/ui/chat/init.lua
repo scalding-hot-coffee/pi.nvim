@@ -562,6 +562,30 @@ end
 function Chat:_send_message(queue_type)
     local text = self._prompt:text()
 
+    -- Handle slash commands
+    if text:match("^%s*/") then
+        local cmd = text:match("^%s*/(%S+)")
+        if cmd then
+            local cmd_map = {
+                model = "PiSelectModel",
+                thinking = "PiToggleThinking",
+                new = "PiNewSession",
+                abort = "PiAbort",
+                stop = "PiStop",
+                attention = "PiAttention",
+                compact = "PiCompact",
+                ["model-tags"] = "PiModelTags",
+                ["tag-model"] = "PiTagModel",
+                ["scoped-models"] = "PiCmdScopedModels",
+            }
+            if cmd_map[cmd] then
+                vim.cmd(cmd_map[cmd])
+                self._prompt:clear_text()
+                return
+            end
+        end
+    end
+
     if text == "" and self._attachments:count() == 0 then
         return
     end
