@@ -761,7 +761,7 @@ Note that `pi.invoke` requires an active session — if no chat is running for t
 
 ### Completion
 
-The π prompt buffer ships with completion for both `@mentions` and `/commands` out of the box. Two integrations are provided:
+The π prompt buffer ships with completion for both `@mentions` and `/commands`. Three integrations are provided:
 
 **1. Built-in `completefunc` (always on).** Every π prompt buffer has a `completefunc` set, so completion works without any extra configuration. If you don't use a completion plugin, trigger it manually in insert mode with:
 
@@ -791,7 +791,48 @@ require("blink.cmp").setup({
 })
 ```
 
-Other completion plugins (nvim-cmp, etc.) aren't shipped as first-class sources, but they can usually bridge the built-in `completefunc` via their `omni`/`completefunc` source adapters. If you'd like a native source for another plugin, please open an issue.
+**3. `nvim-cmp` source (optional).** If you use [nvim-cmp](https://github.com/hrsh7th/nvim-cmp), pi.nvim ships a source at `pi.completion.cmp` that reproduces the TUI popup: `/commands` (with their descriptions in the menu column) on the first line, `@path` mentions anywhere, prefix matches ranked above fuzzy ones, and directories collapsing one segment at a time. Register it once and scope it to the prompt buffer, since the source's `is_available` is already filetype-gated:
+
+```lua
+local cmp = require("cmp")
+local compare = require("cmp.config.compare")
+
+cmp.register_source("pi", require("pi.completion.cmp").new())
+
+-- Keep your normal sources for everything else…
+cmp.setup({ sources = { { name = "nvim_lsp" }, { name = "buffer" } } })
+
+-- …and give the π prompt TUI-parity behaviour.
+cmp.setup.filetype("pi-chat-prompt", {
+    sources = { { name = "pi" } },
+    completion = { completeopt = "menu,menuone,noinsert,noselect" },
+    -- π ranks prefix matches above fuzzy ones; cmp's score would reshuffle them.
+    sorting = { comparators = { compare.sort_text } },
+    mapping = {
+        -- Tab accepts, like the TUI.
+        ["<Tab>"] = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true }),
+        -- Enter accepts; for a slash command it also sends the prompt, again like
+        -- the TUI. With the popup closed it falls through to pi.nvim's submit.
+        ["<CR>"] = cmp.mapping(function(fallback)
+            if not cmp.visible() then
+                return fallback()
+            end
+            local entry = cmp.get_selected_entry() or cmp.get_active_entry()
+            local item = entry and entry.completion_item
+            if item and item.data and item.data.pi == "command" then
+                return cmp.confirm({ select = true }, function()
+                    require("pi").submit()
+                end)
+            end
+            return cmp.confirm({ select = true })
+        end, { "i", "s" }),
+    },
+})
+```
+
+Scoping `sources` to the prompt buffer keeps prose suggestions (buffer/vsnip/luasnip) out of the way while you type a message — cmp's per-filetype config replaces the source list rather than appending to it.
+
+Other completion plugins aren't shipped as first-class sources, but they can usually bridge the built-in `completefunc` via their `omni`/`completefunc` source adapters. If you'd like a native source for another plugin, please open an issue.
 
 #### Adapting non-upstream RPC backends
 
@@ -1892,6 +1933,7 @@ pi.stop()                     -- kill the RPC process and close the chat for the
 
 -- Prompt input
 pi.send_mention(args?, opts?) -- insert an @-mention for the current buffer / selection
+pi.submit()                   -- submit the prompt draft, exactly as <CR> does in the prompt window
 pi.quick_edit(opts?)          -- rewrite a visual selection with an ephemeral worker
 pi.select_quick_edit_model()  -- choose machine-local quick-edit model override
 pi.reset_quick_edit_model()   -- restore the profile's quick-edit model

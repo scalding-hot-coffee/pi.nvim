@@ -315,6 +315,17 @@ function M.select_model_all()
     require("pi.models").select_all(session)
 end
 
+--- Submit the current prompt draft, exactly as `<CR>` does in the prompt window.
+--- When the agent is streaming, this steers. Exposed so host completion (e.g.
+--- nvim-cmp) can accept a `/command` and send it in one keystroke, matching pi's
+--- TUI behaviour.
+function M.submit()
+    local session = require("pi.sessions.manager").get()
+    if session then
+        session.chat:submit()
+    end
+end
+
 --- Send an @-mention to the prompt.
 --- With no args or command args: mentions current buffer (with visual selection if any).
 --- With a loc table: mentions the given path and optional line range.
