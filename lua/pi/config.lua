@@ -189,19 +189,16 @@
 ---@field map_command? fun(cmd: table, ctx: pi.RpcAdapterContext): table? Map or drop outbound RPC commands.
 ---@field map_event? fun(msg: table, ctx: pi.RpcAdapterContext): table? Map or drop inbound RPC events.
 
----@class pi.Profile
----@field desc string
----@field model string?
----@field exclude_tools string[]?
----@field append_prompt string?
----@field thinking string?
----@field cwd string?
-
----@class pi.ProfilesConfig
+---@class pi.QuickEditConfig
+---@field profile string Pi profile whose model/thinking is used by the ephemeral worker.
+---@field context_lines integer Lines of immutable context before and after the selection.
+---@field timeout integer Worker timeout in milliseconds.
+---@field max_attempts integer Strict-JSON repair attempts.
+---@field prompt string vim.ui.input prompt label.
 
 ---@class pi.Options
 ---@field cli pi.CliConfig
----@field profiles? pi.ProfilesConfig
+---@field quick_edit pi.QuickEditConfig
 ---@field rpc pi.RpcConfig
 ---@field agent_dir? string Override the π agent directory (default: $PI_CODING_AGENT_DIR or ~/.pi/agent)
 ---@field debug boolean Enable RPC debug logging to stdpath("log")/pi/<session>/rpc.log
@@ -242,6 +239,13 @@ local defaults = {
     agent_dir = nil,
     debug = false,
     models = nil,
+    quick_edit = {
+        profile = "quick-edit",
+        context_lines = 20,
+        timeout = 60000,
+        max_attempts = 2,
+        prompt = "Quick edit: ",
+    },
     spinner = "robot",
     show_thinking = false,
     expand_startup_details = true,
@@ -386,6 +390,19 @@ function M.setup(opts)
     end
 
     M.options = vim.tbl_deep_extend("force", defaults, opts or {})
+
+    local quick = M.options.quick_edit
+    if type(quick.profile) ~= "string" or quick.profile == "" then
+        error("pi.nvim: quick_edit.profile must be a non-empty string", 2)
+    end
+    for _, field in ipairs({ "context_lines", "timeout", "max_attempts" }) do
+        if type(quick[field]) ~= "number" or quick[field] < 1 or quick[field] % 1 ~= 0 then
+            error("pi.nvim: quick_edit." .. field .. " must be a positive integer", 2)
+        end
+    end
+    if type(quick.prompt) ~= "string" then
+        error("pi.nvim: quick_edit.prompt must be a string", 2)
+    end
 
     -- Resolve verbs: merge or replace based on use_defaults.
     if user_verbs then

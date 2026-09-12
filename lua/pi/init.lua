@@ -329,6 +329,22 @@ function M.send_mention(args, opts)
     end
 end
 
+--- Rewrite a visual selection with an ephemeral, tool-free Pi worker.
+---@param opts? table command range metadata
+function M.quick_edit(opts)
+    require("pi.quick_edit").run(opts or {})
+end
+
+--- Select and persist a machine-local quick-edit model override.
+function M.select_quick_edit_model()
+    require("pi.quick_edit").select_model()
+end
+
+--- Clear the machine-local quick-edit model override.
+function M.reset_quick_edit_model()
+    require("pi.quick_edit").reset_model()
+end
+
 --- Attach an image file to the prompt.
 ---@param path string
 ---@return boolean

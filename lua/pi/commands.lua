@@ -108,6 +108,18 @@ function M.setup()
         Pi.send_mention(args)
     end, { range = true, desc = "Send file or selection as @mention to Pi prompt" })
 
+    vim.api.nvim_create_user_command("PiQuickEdit", function(cmd)
+        Pi.quick_edit(cmd)
+    end, { range = true, desc = "Rewrite visual selection with an ephemeral π worker" })
+
+    vim.api.nvim_create_user_command("PiQuickEditModel", function()
+        Pi.select_quick_edit_model()
+    end, { desc = "Select the model used for π quick edits" })
+
+    vim.api.nvim_create_user_command("PiQuickEditModelReset", function()
+        Pi.reset_quick_edit_model()
+    end, { desc = "Reset the π quick-edit model to the profile default" })
+
     vim.api.nvim_create_user_command("PiAttachImage", function(cmd)
         Pi.attach_image(cmd.args)
     end, { nargs = 1, complete = "file", desc = "Attach image file at path to π prompt" })
