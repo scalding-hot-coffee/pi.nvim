@@ -35,8 +35,9 @@ lua/pi/
 │   ├── manager.lua       -- session lifecycle, central event dispatcher
 │   └── history.lua       -- session file parsing for resume
 ├── completion/
-│   ├── init.lua          -- shared fuzzy-match logic
+│   ├── init.lua          -- shared fuzzy-match logic (two-pass: prefix then fuzzy)
 │   ├── blink.lua         -- blink.cmp source for @-mentions and commands
+│   ├── cmp.lua           -- nvim-cmp source (TUI-parity popup; ranks via sortText)
 │   └── omnifunc.lua      -- built-in completefunc fallback
 └── ui/
     ├── highlights.lua    -- highlight groups
@@ -99,7 +100,16 @@ Key source files (under `$(npm root -g)/@earendil-works/pi-coding-agent/`):
 
 ## Verification
 
-- There is no automated test suite in this repo (yet). Verify changes by exercising the affected code path in headless Neovim where practical.
+- `tests/` holds headless Neovim scripts (plain Lua, no plugin): run each with
+  `nvim --clean --headless -u NONE -l tests/<name>.lua`. They `qa!` on success and
+  `error()` on failure, so a non-zero exit means a broken change.
+  - `tests/completion_cmp.lua` — the nvim-cmp source (ranking, kinds, clipping,
+    first-line rule, mention collapsing). Stubs `pi.cache.files` for determinism.
+  - `tests/quick_edit.lua` / `tests/quick_edit_e2e.lua` — command registration and
+    a full selection rewrite driven by `tests/fake-pi.js`.
+  This is not a general suite yet; the UI paths below are still manual.
 - Reading files or reviewing diffs is not verification.
-- If a change can only be checked through interactive UI behavior, say so clearly instead of claiming success.
-- In the final report, state exactly what was verified and what could not be verified in this environment.
+- Chat layout, diff review, and attention UI can only be checked interactively —
+  say so clearly instead of claiming success.
+- In the final report, state exactly what was verified and what could not be
+  verified in this environment.

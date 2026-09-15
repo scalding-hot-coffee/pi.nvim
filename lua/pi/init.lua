@@ -315,6 +315,17 @@ function M.select_model_all()
     require("pi.models").select_all(session)
 end
 
+--- Submit the current prompt draft, exactly as `<CR>` does in the prompt window.
+--- When the agent is streaming, this steers. Exposed so host completion (e.g.
+--- nvim-cmp) can accept a `/command` and send it in one keystroke, matching pi's
+--- TUI behaviour.
+function M.submit()
+    local session = require("pi.sessions.manager").get()
+    if session then
+        session.chat:submit()
+    end
+end
+
 --- Send an @-mention to the prompt.
 --- With no args or command args: mentions current buffer (with visual selection if any).
 --- With a loc table: mentions the given path and optional line range.
@@ -327,6 +338,22 @@ function M.send_mention(args, opts)
     else
         Mentions.send_current(args, opts)
     end
+end
+
+--- Rewrite a visual selection with an ephemeral, tool-free Pi worker.
+---@param opts? table command range metadata
+function M.quick_edit(opts)
+    require("pi.quick_edit").run(opts or {})
+end
+
+--- Select and persist a machine-local quick-edit model override.
+function M.select_quick_edit_model()
+    require("pi.quick_edit").select_model()
+end
+
+--- Clear the machine-local quick-edit model override.
+function M.reset_quick_edit_model()
+    require("pi.quick_edit").reset_model()
 end
 
 --- Attach an image file to the prompt.
